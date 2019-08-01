@@ -1,0 +1,28 @@
+{
+  "presets": [
+    "@babel/preset-react",
+    [
+      "@babel/preset-env", {
+      "modules": false,
+      "targets": {
+        "browsers": ["last 2 versions", "ie >= 11"]
+      }
+    }]
+  ],
+  "plugins": [
+    [
+      "react-css-modules",
+      {
+        "webpackHotModuleReloading": true,
+        "generateScopedName": "[name]__[local]--[hash:base64:5]",
+        "filetypes": {
+          ".pcss": {
+            "syntax": "postcss-scss"
+          }
+        }
+      }
+    ],
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-object-rest-spread"
+  ]
+}

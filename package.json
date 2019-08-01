@@ -1,0 +1,48 @@
+{
+  "name": "text-editor-talbeu-extension",
+  "version": "3.0.0",
+  "description": "Text editor extension for Tableau",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env webpack-dev-server --mode=development --env.https=true",
+    "build": "cross-env webpack --mode=production"
+  },
+  "author": "AliaksandrVarachai",
+  "license": "ISC",
+  "engines": {
+    "node": ">=8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://example.com"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-react-css-modules": "^5.2.6",
+    "classnames": "^2.2.6",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.0.4",
+    "cross-env": "^5.2.0",
+    "css-loader": "^3.1.0",
+    "draft-js": "^0.11.0",
+    "draftjs-to-html": "^0.8.4",
+    "html-loader": "^0.5.5",
+    "html-to-draftjs": "^1.4.0",
+    "html-webpack-plugin": "^3.2.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-draft-wysiwyg": "^1.13.2",
+    "remote-redux-devtools": "^0.5.16",
+    "style-loader": "^0.23.1",
+    "uuid": "^3.3.2",
+    "webpack": "^4.38.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2",
+    "whatwg-fetch": "^3.0.0"
+  }
+}
