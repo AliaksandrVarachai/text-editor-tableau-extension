@@ -43,13 +43,13 @@ module.exports = function(env, argv) {
         'process.env.NODE_IS_WEBPACK_DEV_SERVER_STARTED': JSON.stringify(isWebpackDevServerStarted),
       }),
       new HtmlPlugin({
-        filename: '[name].[ext]',
+        filename: 'index.html',
         template: path.join(src, 'index.html')
       }),
       new CopyPlugin([
         {
           from: `${vendors}/*`,
-          to: `${dist}/vendors/[name].[ext]`
+          to: `vendors/[name].[ext]`
         }, {
           from: path.join(src, 'TextEditorTableauExtension.trex')
         }
@@ -113,7 +113,7 @@ module.exports = function(env, argv) {
               loader: 'file-loader',
               options: {
                 name: '[name].[ext]',
-                // outputPath: getOutputPathRelativelyToSrc
+                outputPath: getOutputPathRelativelyToSrc
               }
             }
           ]
