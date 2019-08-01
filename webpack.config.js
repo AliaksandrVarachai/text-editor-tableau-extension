@@ -10,7 +10,6 @@ const src = path.resolve(__dirname, 'src');
 const dist = path.resolve(__dirname, 'dist');
 const nodeModules = path.resolve(__dirname, 'node_modules');
 const images = path.resolve(resources, 'images');
-const ssl = path.resolve(resources, 'ssl');
 const vendors = path.resolve(resources, 'vendors');
 const config = path.resolve(src, 'config');
 const devServerKey = fs.readFileSync('./resources/ssl/dev-server-key.pem');
@@ -27,7 +26,8 @@ module.exports = function(env, argv) {
 
   return {
     entry: {
-      'index': [...polyfills, './src/index']
+      'index': [...polyfills, './src/index'],
+      'config': [...polyfills, './src/config']
     },
     output: {
       filename: '[name].js',
@@ -46,12 +46,14 @@ module.exports = function(env, argv) {
         filename: 'index.html',
         template: path.join(src, 'index.html')
       }),
+      new HtmlPlugin({
+        filename: 'config.html',
+        template: path.join(src, 'config.html')
+      }),
       new CopyPlugin([
         {
           from: `${vendors}/*`,
           to: `vendors/[name].[ext]`
-        }, {
-          from: path.join(src, 'TextEditorTableauExtension.trex')
         }
       ]),
     ].filter(Boolean),
