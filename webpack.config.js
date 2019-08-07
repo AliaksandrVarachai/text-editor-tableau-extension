@@ -12,11 +12,13 @@ const nodeModules = path.resolve(__dirname, 'node_modules');
 const images = path.resolve(resources, 'images');
 const vendors = path.resolve(resources, 'vendors');
 const config = path.resolve(src, 'config');
+const configTourWindow = path.resolve(src, 'script/config-tour-window');
+const startedTourWindow = path.resolve(src, 'script/started-tour-window');
 const devServerKey = fs.readFileSync('./resources/ssl/dev-server-key.pem');
 const devServerCert = fs.readFileSync('./resources/ssl/dev-server-cert.pem');
 
 const polyfills = [
-  'whatwg-fetch',
+  //'whatwg-fetch',
   //'idempotent-babel-polyfill',  !!!deprecated!!!
 ];
 
@@ -26,8 +28,9 @@ module.exports = function(env, argv) {
 
   return {
     entry: {
-      'index': [...polyfills, './src/index'],
-      'config': [...polyfills, './src/config']
+      'index': [...polyfills, path.join(src, 'index')],
+      'config-tour': [...polyfills, path.join(configTourWindow, 'config-tour')],
+      'started-tour': [...polyfills, path.join(startedTourWindow, 'started-tour')],
     },
     output: {
       filename: '[name].js',
@@ -44,11 +47,18 @@ module.exports = function(env, argv) {
       }),
       new HtmlPlugin({
         filename: 'index.html',
-        template: path.join(src, 'index.html')
+        template: path.join(src, 'index.html'),
+        inject: false
       }),
       new HtmlPlugin({
-        filename: 'config.html',
-        template: path.join(src, 'config.html')
+        filename: 'config-tour.html',
+        template: path.join(configTourWindow, 'config-tour.html'),
+        inject: false
+      }),
+      new HtmlPlugin({
+        filename: 'started-tour.html',
+        template: path.join(startedTourWindow, 'started-tour.html'),
+        inject: false
       }),
       new CopyPlugin([
         {
@@ -74,7 +84,7 @@ module.exports = function(env, argv) {
           ]
         },
         {
-          test: /\.p?css$/,
+          test: /\.pcss$/,
           include: [src, path.resolve(resources, 'webpack/dev-server-local-test-tools')],
           use: [
             {
@@ -83,13 +93,13 @@ module.exports = function(env, argv) {
             }, {
               loader: 'css-loader',
               options: {
-                modules: true,
+                modules: {
+                  localIdentName: '[name]__[local]--[hash:base64:5]' //must be the same as for react-css-modules
+                },
                 sourceMap: !isProduction,
-                localIdentName: '[name]__[local]--[hash:base64:5]' //must be the same as for react-css-modules
               }
-            // TODO: add post-css loader
-            // }, {
-            //   loader: 'postcss-loader'
+            }, {
+              loader: 'postcss-loader'
             }
           ]
         },
