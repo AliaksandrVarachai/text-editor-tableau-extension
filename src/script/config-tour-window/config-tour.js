@@ -1,52 +1,74 @@
-import './config-tour.html';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import './config-tour.html';
+import { POP_IS_CLOSED, EXTENSION_ORIGIN } from '../constants/constants';
 import TextEditor from './components/TextEditor/TextEditor';
+import * as mock from '../../mock';
+import './config-tour.pcss';
+
+window.onbeforeunload = function() {
+  window.postMessage(POP_IS_CLOSED, EXTENSION_ORIGIN);
+};
 
 // TODO: add router here
 
 class App extends React.PureComponent {
   state = {
-    isHtmlTextEditorMode: false,
+    isVisualMode: true,
   };
 
-  applyTextEditorChanges = () => {
-    console.log('changeTextEditorMode is not implemented yet.');
+  saveHtmlContent = (event) => {
+    if (this.state.isVisualMode) {
+      console.log('saveHtmlContent for VISUAL MODE is not implemented yet.');
+    } else {
+      console.log('saveHtmlContent for TEXT MODE is not implemented yet.');
+    }
   };
 
-  changeTextEditorMode = (event) => {
+  changeVisualMode = (event) => {
     this.setState({
-      isHtmlTextEditorMode: event.target.checked
+      isVisualMode: !this.state.isVisualMode
     });
   };
 
+  showSettings = (event) => {
+    console.log('showSettings is not implemented yet.');
+  };
+
+  showHelpPage = (event) => {
+    window.open('https://example.com', 'Example of help page');
+  };
+
   render() {
-    const { isHtmlTextEditorMode } = this.state;
+    const { isVisualMode } = this.state;
     return (
       <>
-        <div className="config-menu">
-          <label>
-            <input type="checkbox" checked={isHtmlTextEditorMode} onChange={this.changeTextEditorMode} />
-            HTML Mode
-          </label>
+        <div styleName="menu">
+          <div styleName="menu-item" onClick={this.saveHtmlContent}>Save</div>
+          <div styleName="menu-item" onClick={this.changeVisualMode}>{isVisualMode ? 'Text Editor' : 'Visual Editor'}</div>
+          <div styleName="menu-item" onClick={this.showSettings}>Settings</div>
+          <div styleName="menu-item" onClick={this.showHelpPage}>Help</div>
         </div>
         {
-          isHtmlTextEditorMode
-            ? <div> HTML mode </div>
-            : <TextEditor
-                applyChanges={this.applyTextEditorChanges}
-                htmlContent=""
-              />
+          isVisualMode
+            ?
+            <TextEditor
+              applyChanges={this.saveHtmlContent}
+              htmlContent={mock.htmlContent}
+            />
+            :
+            <textarea value={mock.htmlContent}
+                      styleName="text-editor-html-content"
+                      onChange={this.saveHtmlContent}
+            />
         }
-        <div className="config-footer">
-          Settings will be here
+        <div styleName="message-container">
+          Messages will be here
         </div>
       </>
     )
   }
 }
-
-// TODO: wait until is DOM is loaded or render on backend
 
 ReactDOM.render(<App/>, document.getElementById('root'));

@@ -2,6 +2,7 @@ import './index.html';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { POP_IS_CLOSED } from './script/constants/constants';
 import Button from './script/components/ActionButton/ActionButton.js';
 import './index.pcss';
 
@@ -24,7 +25,7 @@ class App extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      openedPopup: null, // null || popupNames item
+      openedPopupName: '',      // '' or popupNames item
       isDashBoardLoaded: false,
     };
     this.popup = null;
@@ -64,11 +65,15 @@ class App extends React.PureComponent {
       default:
         throw Error(`Unknown popup name "${popupName}" is provided.`);
     }
+    this.setState({
+      openedPopupName: popupName
+    });
 
-    this.popup.onmessage = (event) => {
-      console.log(event.data);
-      if (event.data === 'closed') {
-        console.log('Popup is closed!');
+    this.popup.onmessage = (eventMsg) => {
+      if (eventMsg.data === POP_IS_CLOSED) {
+        this.setState({
+          openedPopupName: ''
+        });
         this.popup = null;
       }
     };
@@ -115,7 +120,7 @@ class App extends React.PureComponent {
           title={isOpenedConfigTourPopup ? 'Close Config' : 'Config Tour'}
           mode={{
             hidden: environmentMode !== environmentModes.authoring,
-            disabled: openedPopupName && !isOpenedConfigTourPopup
+            disabled: !!openedPopupName && !isOpenedConfigTourPopup
           }}
           onClick={this.openOrCloseConfigTourPopup}
         />
@@ -124,7 +129,7 @@ class App extends React.PureComponent {
         <Button
           title={isOpenedStartedTourPopup ? 'Close Tour' : 'Start Tour'}
           mode={{
-            disabled: openedPopupName && !isOpenedStartedTourPopup
+            disabled: !!openedPopupName && !isOpenedStartedTourPopup
           }}
           onClick={this.openOrCloseStartedTourPopup}
         />

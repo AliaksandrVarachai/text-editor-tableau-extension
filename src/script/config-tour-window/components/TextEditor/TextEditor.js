@@ -4,7 +4,7 @@ import { PropTypes } from 'prop-types';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'; // Editor styles
 
 import { createEditorState, createEmptyEditorState, createHtmlContent } from '../../../helpers/text-editor-operations.js';
-import './TextEditor.css';
+import './TextEditor.pcss';
 
 const toolbar = {
   options: [
@@ -111,6 +111,9 @@ export default class TextEditor extends React.PureComponent {
       <Editor
         toolbar={toolbar}
         editorState={this.state.editorState}
+        wrapperClassName="gt__text-editor-wrapper"
+        editorClassName="gt__text-editor-content"
+        toolbarClassName="gt__text-editor-toolbar"
         onEditorStateChange={this.onEditorStateChange}
         onBlur={this.onBlur}
         editorRef={this.setEditorRef}
