@@ -1,8 +1,9 @@
 import './index.html';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import uuidv4 from 'uuid/v4';
 
-import { POP_IS_CLOSED } from './script/constants/constants';
+import { POP_IS_CLOSED, SETTINGS_KEY } from './script/constants/constants';
 import Button from './script/components/ActionButton/ActionButton.js';
 import './index.pcss';
 
@@ -101,10 +102,38 @@ class App extends React.PureComponent {
   };
 
   onDashboardLoad = () => {
+    var environmentMode = tableau.extensions.environment.mode;
     this.setState({
-      environmentMode: tableau.extensions.environment.mode,
+      environmentMode,
       isDashBoardLoaded: true
     });
+
+    var settings = tableau.extensions.settings;
+    var dashboardSettings = settings.getAll();
+    console.log(dashboardSettings);
+    if (dashboardSettings.hasOwnProperty(SETTINGS_KEY)) {
+      // Both for Authoring and Viewing modes
+      console.log('found:', dashboardSettings[SETTINGS_KEY]);
+    } else {
+      if (environmentMode === environmentModes.authoring) {
+        // Authoring mode
+        var tourUuid = uuidv4();
+        settings.set(SETTINGS_KEY, tourUuid);
+        settings.saveAsync()
+          .then(result => {
+            console.log('Settings are saved', result);
+            //return fetch('serverUrl', options);
+          })
+          .catch(error => {
+            throw error;
+          });
+        console.log('generated:', tourUuid);
+      } else {
+        // Viewing mode
+        console.log('There is no tour embedded into the dashboard. Switch to the authoring mode to add a new tour.');
+        // tableau.extensions.ui.displayDialogAsync(url)
+      }
+    }
   };
 
   render() {
