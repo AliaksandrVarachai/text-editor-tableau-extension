@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import DOMPurify from 'dompurify';
 
 import './started-tour.html';
-import { POP_IS_CLOSED, EXTENSION_ORIGIN } from '../constants/constants';
+import { POPUP_MSG_TYPES, EXTENSION_ORIGIN } from '../constants/constants';
 import * as mock from '../../mock';
 import './started-tour.pcss';
 
 window.onbeforeunload = function() {
-  window.postMessage(POP_IS_CLOSED, EXTENSION_ORIGIN);
+  window.postMessage({type: POPUP_MSG_TYPES.popupIsClosed}, EXTENSION_ORIGIN);
 };
 
 

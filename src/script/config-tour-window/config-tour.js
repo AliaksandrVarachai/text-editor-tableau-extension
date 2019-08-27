@@ -2,24 +2,54 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import './config-tour.html';
-import { POP_IS_CLOSED, EXTENSION_ORIGIN } from '../constants/constants';
+import { POST_MSG_TYPES, POST_MSG_TYPE_NAME, ENVIRONMENT_MODES } from '../constants/constants';
 import TextEditor from './components/TextEditor/TextEditor';
-import * as mock from '../../mock';
+import services from '../rest-api/services';
 import './config-tour.pcss';
 
+window.opener.postMessage({[POST_MSG_TYPE_NAME]: POST_MSG_TYPES.popupIsOpened}, location.origin);
+
 window.onbeforeunload = function() {
-  window.postMessage(POP_IS_CLOSED, EXTENSION_ORIGIN);
+  window.opener.postMessage({[POST_MSG_TYPE_NAME]: POST_MSG_TYPES.popupIsClosed}, location.origin);
 };
 
-// TODO: add router here
-
 class App extends React.PureComponent {
-  state = {
-    isVisualMode: true,
-  };
+  constructor() {
+    super();
+    this.state = {
+      isVisualMode: true,
+      htmlContent: '',
+      tourId: '',
+    };
+
+    window.addEventListener('message', (eventMsg) => {
+      const data = eventMsg.data;
+      if (!data || !data[POST_MSG_TYPE_NAME]) {
+        console.warn('Post message has undefined type.');
+        return;
+      }
+      switch (data[POST_MSG_TYPE_NAME]) {
+        case POST_MSG_TYPES.tourIdPassed:
+          const { id } = data;
+          services.getTour(id, ENVIRONMENT_MODES.authoring).then(tour => {
+            this.setState({htmlContent: tour.htmlContent});
+          });
+          this.setState({tourId: id});
+          break;
+        default:
+          console.warn(`Unhandled message with "${eventMsg.data[POST_MSG_TYPE_NAME]}" type.`);
+      }
+    });
+  }
+
 
   saveHtmlContent = (event) => {
+    if (!this.state.tourId) {
+      console.log('Extension is not ready yet (Tour ID is waiting). Wait a bit please.');
+      return;
+    }
     if (this.state.isVisualMode) {
+      services.updateTour();
       console.log('saveHtmlContent for VISUAL MODE is not implemented yet.');
     } else {
       console.log('saveHtmlContent for TEXT MODE is not implemented yet.');
@@ -41,7 +71,7 @@ class App extends React.PureComponent {
   };
 
   render() {
-    const { isVisualMode } = this.state;
+    const { isVisualMode, htmlContent } = this.state;
     return (
       <>
         <div styleName="menu">
@@ -55,10 +85,10 @@ class App extends React.PureComponent {
             ?
             <TextEditor
               applyChanges={this.saveHtmlContent}
-              htmlContent={mock.htmlContent}
+              htmlContent={htmlContent}
             />
             :
-            <textarea value={mock.htmlContent}
+            <textarea value={htmlContent}
                       styleName="text-editor-html-content"
                       onChange={this.saveHtmlContent}
             />

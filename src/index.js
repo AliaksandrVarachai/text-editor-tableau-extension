@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
 
-import { POP_IS_CLOSED, SETTINGS_KEY } from './script/constants/constants';
+import {POST_MSG_TYPES, SETTINGS_KEY, ENVIRONMENT_MODES, POST_MSG_TYPE_NAME} from './script/constants/constants';
 import Button from './script/components/ActionButton/ActionButton.js';
 import './index.pcss';
 
@@ -16,11 +16,6 @@ const popupNames = {
   startedTour: 'started-tour',
 };
 
-const environmentModes = {
-  authoring: 'authoring',
-  viewing: 'viewing',
-};
-
 
 class App extends React.PureComponent {
   constructor(props) {
@@ -30,28 +25,28 @@ class App extends React.PureComponent {
       isDashBoardLoaded: false,
     };
     this.popup = null;
+    this.tourId = '';
 
     tableau.extensions.initializeAsync({configure: this.openOrCloseConfigTourPopup}).then(this.onDashboardLoad);
 
-    window.onunload = (event) => {
-      if (!this.popup)
-        return;
-      this.closePopup();
+    window.onbeforeunload = (event) => {
+      if (this.popup)
+        this.closePopup();
     }
   }
 
   openPopup = (popupName) => {
-    const configWindowWidth = Math.floor(window.outerWidth / 2);
-    const configWindowHeight = Math.floor(window.outerHeight / 2);
     const configWindowOptions = {
-      width: configWindowWidth + 'px',
-      height: configWindowHeight + 'px',
-      left: Math.floor((window.outerWidth - configWindowWidth) / 2) + 'px',
-      top: Math.floor((window.outerHeight - configWindowHeight) / 2) + 'px',
-      menubar: 'no',
-      status: 'yes',
-      centerscreen: 'yes',
-      chrome: 'yes',
+      width: Math.floor(window.outerWidth / 3),
+      height: Math.floor(window.outerHeight / 2),
+      left: 0,
+      top: 0,
+      menubar: 0,
+      toolbar: 0,
+      location: 1,
+      status: 1,
+      // centerscreen: 'yes',
+      // chrome: 'yes',
       // alwaysRaised: 'yes',
     };
     const stringConfigWindowOptions = Object.keys(configWindowOptions).map(key => `${key}=${configWindowOptions[key]}`).join(',');
@@ -70,12 +65,27 @@ class App extends React.PureComponent {
       openedPopupName: popupName
     });
 
-    this.popup.onmessage = (eventMsg) => {
-      if (eventMsg.data === POP_IS_CLOSED) {
-        this.setState({
-          openedPopupName: ''
-        });
-        this.popup = null;
+    window.onmessage = (eventMsg) => {
+      const data = eventMsg.data;
+      if (!data || !data[POST_MSG_TYPE_NAME]) {
+        console.warn('Post message has undefined type.');
+        return;
+      }
+      switch (data[POST_MSG_TYPE_NAME]) {
+        case POST_MSG_TYPES.popupIsOpened:
+          this.popup.postMessage({
+            [POST_MSG_TYPE_NAME]: POST_MSG_TYPES.tourIdPassed,
+            id: this.tourId,
+          }, location.origin);
+          break;
+        case POST_MSG_TYPES.popupIsClosed:
+          this.setState({
+            openedPopupName: ''
+          });
+          this.popup = null;
+          break;
+        default:
+          console.warn(`Unhandled message with "${eventMsg.data[POST_MSG_TYPE_NAME]}" type.`);
       }
     };
   };
@@ -110,30 +120,33 @@ class App extends React.PureComponent {
 
     var settings = tableau.extensions.settings;
     var dashboardSettings = settings.getAll();
-    console.log(dashboardSettings);
     if (dashboardSettings.hasOwnProperty(SETTINGS_KEY)) {
       // Both for Authoring and Viewing modes
-      console.log('found:', dashboardSettings[SETTINGS_KEY]);
+      this.tourId = dashboardSettings[SETTINGS_KEY];
+      console.log(`Bound tour [${this.tourId}] if found.`);
     } else {
-      if (environmentMode === environmentModes.authoring) {
+      if (environmentMode === ENVIRONMENT_MODES.authoring) {
         // Authoring mode
-        var tourUuid = uuidv4();
-        settings.set(SETTINGS_KEY, tourUuid);
+        this.tourId = uuidv4();
+        settings.set(SETTINGS_KEY, this.tourId);
         settings.saveAsync()
           .then(result => {
-            console.log('Settings are saved', result);
-            //return fetch('serverUrl', options);
+            console.log(`Generated tour ID [${this.tourId}] is saved successfully`);
           })
           .catch(error => {
             throw error;
           });
-        console.log('generated:', tourUuid);
       } else {
         // Viewing mode
         console.log('There is no tour embedded into the dashboard. Switch to the authoring mode to add a new tour.');
         // tableau.extensions.ui.displayDialogAsync(url)
       }
     }
+  };
+
+  componentWillUnmount = () => {
+    if (this.popup)
+      this.closePopup();
   };
 
   render() {
@@ -148,7 +161,7 @@ class App extends React.PureComponent {
         <Button
           title={isOpenedConfigTourPopup ? 'Close Config' : 'Config Tour'}
           mode={{
-            hidden: environmentMode !== environmentModes.authoring,
+            hidden: environmentMode !== ENVIRONMENT_MODES.authoring,
             disabled: !!openedPopupName && !isOpenedConfigTourPopup
           }}
           onClick={this.openOrCloseConfigTourPopup}

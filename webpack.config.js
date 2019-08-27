@@ -4,6 +4,7 @@ const fs = require('fs');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlPlugin = require('html-webpack-plugin');
+const { CONFIG_FILE_PATH } = require('./src/script/constants/constants');
 
 const resources = path.resolve(__dirname, 'resources');
 const src = path.resolve(__dirname, 'src');
@@ -11,7 +12,6 @@ const dist = path.resolve(__dirname, 'dist');
 const nodeModules = path.resolve(__dirname, 'node_modules');
 const images = path.resolve(resources, 'images');
 const vendors = path.resolve(resources, 'vendors');
-const config = path.resolve(src, 'config');
 const configTourWindow = path.resolve(src, 'script/config-tour-window');
 const startedTourWindow = path.resolve(src, 'script/started-tour-window');
 const devServerKey = fs.readFileSync('./resources/ssl/dev-server-key.pem');
@@ -64,6 +64,9 @@ module.exports = function(env, argv) {
         {
           from: `${vendors}/*`,
           to: `vendors/[name].[ext]`
+        }, {
+          from: path.join(resources, 'config.json'),
+          fo: CONFIG_FILE_PATH
         }
       ]),
     ].filter(Boolean),
@@ -119,7 +122,6 @@ module.exports = function(env, argv) {
         {
           type: 'javascript/auto',
           test: /\.json$/,
-          include: config,
           use: [
             {
               loader: 'file-loader',
