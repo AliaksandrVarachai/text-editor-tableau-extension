@@ -31,9 +31,15 @@ class App extends React.PureComponent {
       switch (data[POST_MSG_TYPE_NAME]) {
         case POST_MSG_TYPES.tourIdPassed:
           const { id } = data;
-          services.getTour(id, ENVIRONMENT_MODES.authoring).then(tour => {
-            this.setState({htmlContent: tour.htmlContent});
-          });
+          services.getTour(id, ENVIRONMENT_MODES.authoring)
+            .then(tour => {
+              this.setState({htmlContent: tour.htmlContent});
+            })
+            .catch(err => {
+              if (process.env.NODE_ENV === 'development')
+                console.log(err);
+              this.setState({htmlContent: "Sorry, tour is not found."})
+            });
           this.setState({tourId: id});
           break;
         default:

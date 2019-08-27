@@ -22,12 +22,6 @@ const POST_MSG_TYPES = {
 const POST_MSG_TYPE_NAME = `type_${extensionUuid}`;
 
 /**
- * Extension origin (needed for security reason).
- * @type {string}
- */
-const EXTENSION_ORIGIN = '*'; // TODO: replace with real extension origin
-
-/**
  * Unique settings key name for the guided tour extension.
  * @type {string}
  */
@@ -52,7 +46,6 @@ const CONFIG_FILE_PATH = 'config.json';
 module.exports = {
   POST_MSG_TYPES,
   POST_MSG_TYPE_NAME,
-  EXTENSION_ORIGIN,
   SETTINGS_KEY,
   ENVIRONMENT_MODES,
   CONFIG_FILE_PATH,

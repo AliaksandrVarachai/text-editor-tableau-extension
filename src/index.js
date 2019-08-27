@@ -59,7 +59,7 @@ class App extends React.PureComponent {
         this.popup = window.open('/started-tour.html', 'Popup', stringConfigWindowOptions);
         break;
       default:
-        throw Error(`Unknown popup name "${popupName}" is provided.`);
+        // throw Error(`Unknown popup name "${popupName}" is provided.`);
     }
     this.setState({
       openedPopupName: popupName
@@ -133,8 +133,10 @@ class App extends React.PureComponent {
           .then(result => {
             console.log(`Generated tour ID [${this.tourId}] is saved successfully`);
           })
-          .catch(error => {
-            throw error;
+          .catch(err => {
+            if (process.env.NODE_ENV === 'development')
+              console.log(err);
+            console.log('Impossible to save custom settings');
           });
       } else {
         // Viewing mode
