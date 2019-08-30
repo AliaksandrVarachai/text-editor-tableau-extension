@@ -1,35 +1,48 @@
-import { ENVIRONMENT_MODES } from '../constants/constants';
 import communication from './communication';
 
 
 /**
- * Gets a tour object which depends on the environment mode.
+ * Gets a tour for Viewing mode.
  * @param {string} id - tour's ID.
- * @param {string} modeEnvironment - environment node.
  * @returns {Promise<object>} - promise returning tour object.
  */
-function getTour(id, modeEnvironment = ENVIRONMENT_MODES.viewing) {
-  const modeSearchParam = modeEnvironment === ENVIRONMENT_MODES.viewing ? 'viewing' : 'authoring';
-  return communication.get(`api/tours/getTour/${id}?mode=${modeSearchParam}`);
+function getTour(id) {
+  return communication.get(`api/tours/getTour?id=${id}`);
+}
+
+/**
+ * Gets a tour (creates a new empty tour, if there is no tours with given ID) for Authoring mode.
+ * @param {string} id - tour's ID.
+ * @returns {Promise<object>} - promise returning tour object.
+ */
+function getOrCreateEmptyTour(id) {
+  return getTour(id)
+    .then(tour => tour ? [tour, null] : Promise.all([
+      tour,
+      createTour( {id, htmlContent: 'Add your content here, please.'} )
+    ]))
+    .then(([tour, _]) => tour || getTour(id));
 }
 
 
 /**
  * Updates a tour.
  * @param {string} id - tour's ID.
+ * @param {string} htmlContent - new HTML content of the tour.
  * @returns {Promise<object>} - promise returning tour object.
  */
-function updateTour(id) {
-  return communication.get(`api/tours/updateTour/${id}`);
+function updateTour({ id, htmlContent }) {
+  return communication.put(`api/tours/updateTour?id=${id}`, { id, htmlContent });
 }
 
 /**
  * Creates a tour.
  * @param {string} id - tour's ID.
+ * @param {string} htmlContent - HTML content of the new tour.
  * @returns {Promise<object>} - promise returning null.
  */
-function createTour(id) {
-  return communication.get(`api/tours/createTour/${id}`);
+function createTour({ id, htmlContent }) {
+  return communication.put(`api/tours/createTour?id=${id}`, { id, htmlContent });
 }
 
 /**
@@ -38,12 +51,13 @@ function createTour(id) {
  * @returns {Promise<null>} - promise returning null.
  */
 function deleteTour(id) {
-  return communication.get(`api/tours/deleteTour/${id}`);
+  return communication.get(`api/tours/deleteTour?id=${id}`);
 }
 
 
 export default {
   getTour,
+  getOrCreateEmptyTour,
   updateTour,
   createTour,
   deleteTour,

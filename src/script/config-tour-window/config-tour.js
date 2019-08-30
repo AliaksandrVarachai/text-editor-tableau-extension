@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import classnames from 'classnames';
 
 import './config-tour.html';
 import { POST_MSG_TYPES, POST_MSG_TYPE_NAME, ENVIRONMENT_MODES } from '../constants/constants';
@@ -25,21 +26,34 @@ class App extends React.PureComponent {
     window.addEventListener('message', (eventMsg) => {
       const data = eventMsg.data;
       if (!data || !data[POST_MSG_TYPE_NAME]) {
-        console.warn('Post message has undefined type.');
+        //console.warn('Post message has undefined type.');
         return;
       }
       switch (data[POST_MSG_TYPE_NAME]) {
         case POST_MSG_TYPES.tourIdPassed:
           const { id } = data;
-          services.getTour(id, ENVIRONMENT_MODES.authoring)
-            .then(tour => {
-              this.setState({htmlContent: tour.htmlContent});
-            })
-            .catch(err => {
-              if (process.env.NODE_ENV === 'development')
-                console.log(err);
-              this.setState({htmlContent: "Sorry, tour is not found."})
-            });
+          if (ENVIRONMENT_MODES.authoring) {
+            services.getOrCreateEmptyTour(id)
+              .then(tour => {
+                this.setState({htmlContent: tour.htmlContent || ''});
+              })
+              .catch(err => {
+                if (process.env.NODE_ENV === 'development')
+                  console.log(err);
+                this.setState({htmlContent: "Sorry, there is an error during creating a new tour."})
+              });
+          } else {
+            services.getTour(id)
+              .then(tour => {
+                this.setState({htmlContent: tour.htmlContent});
+              })
+              .catch(err => {
+                if (process.env.NODE_ENV === 'development')
+                  console.log(err);
+                this.setState({htmlContent: "Sorry, tour is not found."})
+              });
+          }
+
           this.setState({tourId: id});
           break;
         default:
@@ -50,16 +64,22 @@ class App extends React.PureComponent {
 
 
   saveHtmlContent = (event) => {
-    if (!this.state.tourId) {
-      console.log('Extension is not ready yet (Tour ID is waiting). Wait a bit please.');
+    if (event.target.classList.contains('disabled'))
+      return;
+    const { tourId, htmlContent } = this.state;
+    if (!tourId) {
+      console.log('Extension is not ready yet (Tour ID is being waited). Wait a bit please and save again.');
       return;
     }
-    if (this.state.isVisualMode) {
-      services.updateTour();
-      console.log('saveHtmlContent for VISUAL MODE is not implemented yet.');
-    } else {
-      console.log('saveHtmlContent for TEXT MODE is not implemented yet.');
-    }
+    services.updateTour({id: tourId, htmlContent });
+  };
+
+  applyVisualContentChanges = (newHtmlContent) => {
+    this.setState({htmlContent: newHtmlContent});
+  };
+
+  applyManualContentChanges = (event) => {
+    this.setState({htmlContent: event.target.value});
   };
 
   changeVisualMode = (event) => {
@@ -81,22 +101,30 @@ class App extends React.PureComponent {
     return (
       <>
         <div styleName="menu">
-          <div styleName="menu-item" onClick={this.saveHtmlContent}>Save</div>
-          <div styleName="menu-item" onClick={this.changeVisualMode}>{isVisualMode ? 'Text Editor' : 'Visual Editor'}</div>
-          <div styleName="menu-item" onClick={this.showSettings}>Settings</div>
-          <div styleName="menu-item" onClick={this.showHelpPage}>Help</div>
+          <div styleName={classnames('menu-item', isVisualMode || 'disabled' )} onClick={this.saveHtmlContent}>
+            Save
+          </div>
+          <div styleName="menu-item" onClick={this.changeVisualMode}>
+            {isVisualMode ? 'Text Editor' : 'Visual Editor'}
+          </div>
+          <div styleName="menu-item" onClick={this.showSettings}>
+            Settings
+          </div>
+          <div styleName="menu-item" onClick={this.showHelpPage}>
+            Help
+          </div>
         </div>
         {
           isVisualMode
             ?
             <TextEditor
-              applyChanges={this.saveHtmlContent}
+              applyChanges={this.applyVisualContentChanges}
               htmlContent={htmlContent}
             />
             :
             <textarea value={htmlContent}
                       styleName="text-editor-html-content"
-                      onChange={this.saveHtmlContent}
+                      onChange={this.applyManualContentChanges}
             />
         }
         <div styleName="message-container">

@@ -1,3 +1,4 @@
 {
-  "GUIDED_TOUR_API_HOST":  "https://ecsb00100c96.epam.com:446/"
+  "GUIDED_TOUR_API_HOST___":  "https://ecsb00100c96.epam.com:446/",
+  "GUIDED_TOUR_API_HOST":  "https://localhost:3000/"
 }

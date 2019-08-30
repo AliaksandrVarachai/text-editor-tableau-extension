@@ -94,9 +94,7 @@ export default class TextEditor extends React.PureComponent {
   };
 
   onBlur = (event) => {
-    this.props.applyChanges({
-      htmlContent: createHtmlContent(this.state.editorState)
-    });
+    this.props.applyChanges(createHtmlContent(this.state.editorState));
   };
 
   setEditorRef = ref => {

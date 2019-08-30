@@ -22,11 +22,19 @@ html, body {
   font-weight: bold;
 }
 
+.disabled {
+  opacity: 0.5;
+
+  &:hover {
+    cursor: not-allowed;
+  }
+}
+
 .menu-item {
   display: inline-block;
   padding: 8px 15px;
 
-  &:hover {
+  &:hover:not(.disabled) {
     cursor: pointer;
     text-decoration: underline;
   }
