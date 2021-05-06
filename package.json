@@ -44,7 +44,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-draft-wysiwyg": "^1.13.2",
+    "react-draft-wysiwyg": "^1.14.6",
     "remote-redux-devtools": "^0.5.16",
     "style-loader": "^0.23.1",
     "uuid": "^3.3.2",
